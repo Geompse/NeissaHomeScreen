@@ -1,0 +1,69 @@
+<LinearLayout xmlns:lolandroid="x:l" xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+	android:orientation="vertical"
+    android:gravity="bottom|center_horizontal">
+
+	<TextClock
+		android:id="@+id/go_clock"
+        android:text="@string/nil"
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+		android:gravity="center"
+		android:format24Hour="E dd/MM/yyyy\nHH:mm:ss"
+		android:clickable="true"
+		android:onClick="go"
+		android:textSize="50dp" 
+		android:textColor="#00CC00" 
+		android:typeface="monospace" />
+		
+	<ListView
+		android:id="@+id/list"
+		android:layout_width="match_parent"
+        android:layout_height="680dp" />
+	
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="100dp"
+		android:orientation="horizontal"
+		android:gravity="center_vertical|center_horizontal">
+    <TextView
+		android:id="@+id/go_phone"
+        android:text="@string/phone"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+		android:gravity="center"
+		android:clickable="true"
+		android:onClick="go"
+		android:textColor="#008800"
+		android:typeface="monospace" />
+    <TextView
+		android:id="@+id/go_google_chrome"
+        android:text="@string/google_chrome"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+		android:gravity="center"
+		android:clickable="true"
+		android:onClick="go"
+		android:textColor="#008800"
+		android:typeface="monospace" />
+	<TextView
+		android:id="@+id/go_photo"
+        android:text="@string/photo"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+		android:gravity="center"
+		android:clickable="true"
+		android:onClick="go"
+		android:textColor="#008800" 
+		android:typeface="monospace" />
+	</LinearLayout>
+	
+	<TextView
+		android:id="@+id/paddingBottom"
+        android:text="@string/nil"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+		android:gravity="center" />
+	
+</LinearLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Neissa Home Screen</string>
+	<string name="nil"></string>
+	
+    <string name="phone">Téléphone</string>
+    <string name="google_chrome">Google Chrome</string>
+	<string name="photo">Appareil photo</string>
+	
+</resources>
