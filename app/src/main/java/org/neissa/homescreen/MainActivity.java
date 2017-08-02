@@ -46,8 +46,8 @@ public class MainActivity extends Activity
 
 		buildList();
 
-		android.widget.TextView mTextView = (android.widget.TextView) findViewById(R.id.go_clock);
-		mTextView.setOnLongClickListener(new android.view.View.OnLongClickListener(){
+		android.widget.TextView mTextViewClock = (android.widget.TextView) findViewById(R.id.go_clock);
+		mTextViewClock.setOnLongClickListener(new android.view.View.OnLongClickListener(){
 				@Override
 				public boolean onLongClick(View p1)
 				{
@@ -55,7 +55,16 @@ public class MainActivity extends Activity
 					return true;
 				}
 			});
-		
+		android.widget.TextView mTextViewPhoto = (android.widget.TextView) findViewById(R.id.go_photo2);
+		mTextViewPhoto.setOnLongClickListener(new android.view.View.OnLongClickListener(){
+				@Override
+				public boolean onLongClick(View p1)
+				{
+					gophoto2("1");
+					return true;
+				}
+			});
+			
 		android.widget.ListView mListView = (android.widget.ListView) findViewById(R.id.list);
 		mListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener(){
 				public void onItemClick(android.widget.AdapterView<?> arg0, View v, int position, long id)
@@ -151,6 +160,20 @@ public class MainActivity extends Activity
 		intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         Uri uri = Uri.fromParts("package", packageName, null);
         intent.setData(uri);
+		startActivity(intent);
+	}
+	public void gophoto2(View view)
+	{
+		gophoto2("0");
+	}
+	public void gophoto2(String cameraId)
+	{
+		String packageName = "org.neissa.camera";
+		Intent intent = new Intent(packageName+".START");
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		intent.setComponent(ComponentName.unflattenFromString("org.neissa.camera/org.neissa.camera.MainActivity"));
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra("CAMERA_ID",cameraId);
 		startActivity(intent);
 	}
 	public void buildList()
