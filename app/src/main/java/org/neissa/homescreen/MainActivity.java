@@ -65,7 +65,7 @@ public class MainActivity extends Activity
 				}
 			});
 			
-		android.widget.ListView mListView = (android.widget.ListView) findViewById(R.id.list);
+		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
 		mListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener(){
 				public void onItemClick(android.widget.AdapterView<?> arg0, View v, int position, long id)
 				{
@@ -178,7 +178,7 @@ public class MainActivity extends Activity
 	}
 	public void buildList()
 	{
-		android.widget.ListView mListView = (android.widget.ListView) findViewById(R.id.list);
+		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
 		Parcelable state = mListView.onSaveInstanceState();
 		
 		java.util.List<android.content.pm.ApplicationInfo> apps = getPackageManager().getInstalledApplications(0);
@@ -187,7 +187,7 @@ public class MainActivity extends Activity
 			if (!java.util.Arrays.asList(disabledPackages).contains(apps.get(i).packageName))
 				if (getPackageManager().getLaunchIntentForPackage(apps.get(i).packageName) != null)
 					nb++;
-		appNames = new String[nb];
+		String[] appNamesTmp = new String[nb];
 		int n = 0;
 		for (int i=0 ; i < apps.size(); i++)
 		{
@@ -201,12 +201,22 @@ public class MainActivity extends Activity
 					if (appName.length() == 0)
 						appName = (packageName + (app.className != null ?'~' + app.className.replace(packageName, ""): "")).replaceFirst("\\A[a-z]*\\.", "").replace("google.", "").replaceFirst("\\Aandroid\\.", "google.").replace(".apps.", ".").replace(".app.", ".").replace(".engine.", ".").replace(".framework.", ".").replace(".common.", ".").replace(".application.", ".").replaceFirst("Class$", "").replaceFirst("Impl$", "").replaceFirst("App$", "").replaceFirst("Application$", "").replaceFirst("~\\.", "~").replaceFirst("~$", "");
 					appMap.put(appName, packageName);
-					appNames[n] = appName;
+					appNamesTmp[n] = appName;
 					n++;
 				}
 		}
-		java.util.Arrays.sort(appNames);
-
+		java.util.Arrays.sort(appNamesTmp);
+		
+		appNames = new String[nb];
+		for(int i=0; i<nb; i++)
+		{
+			int j = i*2;
+			if(j >= nb)
+				j -= nb + (nb%2==0?-1:0);
+			android.util.Log.e("neissa",""+i+":"+j);
+			appNames[j] = appNamesTmp[i];
+		}
+		
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(MainActivity.this, R.layout.app, appNames);
         mListView.setAdapter(adapter);
 		mListView.onRestoreInstanceState(state);

@@ -17,7 +17,8 @@
 		android:textColor="#00CC00" 
 		android:typeface="monospace" />
 		
-	<ListView
+	<GridView
+		android:numColumns="2"
 		android:id="@+id/list"
 		android:layout_width="match_parent"
         android:layout_height="680dp" />
