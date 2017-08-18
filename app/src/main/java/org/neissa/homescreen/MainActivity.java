@@ -11,6 +11,8 @@ import android.content.*;
 import android.widget.*;
 import android.net.*;
 import android.provider.*;
+import java.lang.reflect.*;
+import android.app.usage.*;
 
 public class MainActivity extends Activity 
 {
@@ -180,7 +182,15 @@ public class MainActivity extends Activity
 	{
 		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
 		Parcelable state = mListView.onSaveInstanceState();
-		
+
+		UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService("usagestats");
+		Map<String,UsageStats> queryUsageStats = mUsageStatsManager.queryAndAggregateUsageStats(System.currentTimeMillis()-3*24*60*60*1000,System.currentTimeMillis());
+		if (queryUsageStats.size() == 0)
+		{
+			startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+			return;
+		}
+			
 		java.util.List<android.content.pm.ApplicationInfo> apps = getPackageManager().getInstalledApplications(0);
 		int nb = 0;
 		for (int i=0 ; i < apps.size(); i++)
@@ -200,6 +210,8 @@ public class MainActivity extends Activity
 					String appName = sharedPref.getString(packageName, "");
 					if (appName.length() == 0)
 						appName = (packageName + (app.className != null ?'~' + app.className.replace(packageName, ""): "")).replaceFirst("\\A[a-z]*\\.", "").replace("google.", "").replaceFirst("\\Aandroid\\.", "google.").replace(".apps.", ".").replace(".app.", ".").replace(".engine.", ".").replace(".framework.", ".").replace(".common.", ".").replace(".application.", ".").replaceFirst("Class$", "").replaceFirst("Impl$", "").replaceFirst("App$", "").replaceFirst("Application$", "").replaceFirst("~\\.", "~").replaceFirst("~$", "");
+					if(queryUsageStats.containsKey(packageName))
+						appName = appName + " *" + ((queryUsageStats.get(packageName).getTotalTimeInForeground()/1000)/60) + "min";
 					appMap.put(appName, packageName);
 					appNamesTmp[n] = appName;
 					n++;
@@ -208,13 +220,33 @@ public class MainActivity extends Activity
 		java.util.Arrays.sort(appNamesTmp);
 		
 		appNames = new String[nb];
+		int nbc = 3;
+		int z = (int)Math.ceil((double)nb/(double)nbc);
+		int[] maxc = new int[nbc];
+		for(int i=0; i<nbc; i++)
+			maxc[i] = z;
+		if(nb%nbc != 0)
+			for(int i=nb%nbc; i<nbc; i++)
+				maxc[i]--;
+		int[] maxi = new int[nbc];
+		for(int i=0; i<nbc; i++)
+			maxi[i] = maxc[i];
+		for(int i=0; i<nbc-1; i++)
+			maxi[i+1] += maxi[i];
+		for(int i=0; i<nb; i++)
+			appNames[i] = appNamesTmp[0];
+		int k=0;
+		int j=0;
 		for(int i=0; i<nb; i++)
 		{
-			int j = i*2;
-			if(j >= nb)
-				j -= nb + (nb%2==0?-1:0);
-			android.util.Log.e("neissa",""+i+":"+j);
+			if(i>=maxi[k])
+			{
+				k++;
+				j=k;
+			}
+			j = Math.max(0,Math.min(nb-1,j));
 			appNames[j] = appNamesTmp[i];
+			j += 3;
 		}
 		
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(MainActivity.this, R.layout.app, appNames);
