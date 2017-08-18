@@ -12,7 +12,6 @@ import android.widget.*;
 import android.net.*;
 import android.provider.*;
 import java.lang.reflect.*;
-import android.app.usage.*;
 
 public class MainActivity extends Activity 
 {
@@ -183,14 +182,6 @@ public class MainActivity extends Activity
 		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
 		Parcelable state = mListView.onSaveInstanceState();
 
-		UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService("usagestats");
-		Map<String,UsageStats> queryUsageStats = mUsageStatsManager.queryAndAggregateUsageStats(System.currentTimeMillis()-3*24*60*60*1000,System.currentTimeMillis());
-		if (queryUsageStats.size() == 0)
-		{
-			startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
-			return;
-		}
-			
 		java.util.List<android.content.pm.ApplicationInfo> apps = getPackageManager().getInstalledApplications(0);
 		int nb = 0;
 		for (int i=0 ; i < apps.size(); i++)
@@ -210,8 +201,6 @@ public class MainActivity extends Activity
 					String appName = sharedPref.getString(packageName, "");
 					if (appName.length() == 0)
 						appName = (packageName + (app.className != null ?'~' + app.className.replace(packageName, ""): "")).replaceFirst("\\A[a-z]*\\.", "").replace("google.", "").replaceFirst("\\Aandroid\\.", "google.").replace(".apps.", ".").replace(".app.", ".").replace(".engine.", ".").replace(".framework.", ".").replace(".common.", ".").replace(".application.", ".").replaceFirst("Class$", "").replaceFirst("Impl$", "").replaceFirst("App$", "").replaceFirst("Application$", "").replaceFirst("~\\.", "~").replaceFirst("~$", "");
-					if(queryUsageStats.containsKey(packageName))
-						appName = appName + " *" + ((queryUsageStats.get(packageName).getTotalTimeInForeground()/1000)/60) + "min";
 					appMap.put(appName, packageName);
 					appNamesTmp[n] = appName;
 					n++;

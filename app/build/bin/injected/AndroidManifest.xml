@@ -9,9 +9,6 @@
 		android:minSdkVersion="14"
 		android:targetSdkVersion="21"/>
 
-	<uses-permission
-		android:name="android.permission.PACKAGE_USAGE_STATS"/>
-
 	<application
 		android:launchMode="singleInstance"
 		android:stateNotNeeded="true"
