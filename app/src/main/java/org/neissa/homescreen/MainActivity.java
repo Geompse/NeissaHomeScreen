@@ -88,6 +88,8 @@ public class MainActivity extends Activity
 				public void onItemClick(android.widget.AdapterView<?> arg0, View v, int appNameSortedIndex, long id)
 				{
 					String packageName = getPackageNameFromAppNameSortedIndex(appNameSortedIndex);
+					if(packageName == null)
+						return;
 					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage(packageName);
 					if (obj == null)
 						return;
