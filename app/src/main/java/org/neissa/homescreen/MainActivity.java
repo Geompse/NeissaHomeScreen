@@ -15,6 +15,7 @@ import java.lang.reflect.*;
 
 public class MainActivity extends Activity 
 {
+	public static int COlUMNS = 4;
 	public static HashMap<Integer,Integer> groupNameIndexesToAppNameOriginalIndexes = new HashMap<Integer,Integer>();
 	public static HashMap<Integer,Integer> appNameSortedIndexesToGroupNameIndexes = new HashMap<Integer,Integer>();
 	public static HashMap<String, String> packageNamesToAppNames = new HashMap<String, String>();
@@ -186,8 +187,10 @@ public class MainActivity extends Activity
 	}
 	public void buildList()
 	{
-		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
-		Parcelable state = mListView.onSaveInstanceState();
+		int nbc = Math.max(1,COlUMNS);
+		android.widget.GridView mGridView = (android.widget.GridView) findViewById(R.id.list);
+		mGridView.setNumColumns(nbc);
+		Parcelable state = mGridView.onSaveInstanceState();
 
 		java.util.List<android.content.pm.ApplicationInfo> apps = getPackageManager().getInstalledApplications(0);
 		int nb = 0;
@@ -233,42 +236,34 @@ public class MainActivity extends Activity
 			groupNameIndexesToAppNameOriginalIndexes.put(groupNames.size(), i);
 			groupNames.add(appNamesOriginal[i].substring(2));
 		}
+		while(groupNames.size()%nbc != 0)
+			groupNames.add("");
 		nb = groupNames.size();
 
 		appNamesSorted = new String[nb];
-		int nbc = 3;
-		int z = (int)Math.ceil((double)nb / (double)nbc);
-		int[] maxc = new int[nbc];
-		for (int i=0; i < nbc; i++)
-			maxc[i] = z;
-		if (nb % nbc != 0)
-			for (int i=nb % nbc; i < nbc; i++)
-				maxc[i]--;
 		int[] maxi = new int[nbc];
-		for (int i=0; i < nbc; i++)
-			maxi[i] = maxc[i];
-		for (int i=0; i < nbc - 1; i++)
-			maxi[i + 1] += maxi[i];
-		for (int i=0; i < nb; i++)
-			appNamesSorted[i] = "---";
-		int k=0;
+		for (int c=0; c < nbc; c++)
+			maxi[c] = (nb/nbc)*(c+1);
+		int c=0;
 		int j=0;
 		for (int i=0; i < nb; i++)
+			appNamesSorted[i] = "---";
+		for (int i=0; i < nb; i++)
 		{
-			if (i >= maxi[k])
+			if (i >= maxi[c])
 			{
-				k++;
-				j = k;
+				c++;
+				j = c;
 			}
 			j = Math.max(0, Math.min(nb - 1, j));
 			appNamesSorted[j] = groupNames.get(i);
 			appNameSortedIndexesToGroupNameIndexes.put(j, i);
-			j += 3;
+			j += nbc;
 		}
 
         android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(MainActivity.this, R.layout.app, appNamesSorted);
-        mListView.setAdapter(adapter);
-		mListView.onRestoreInstanceState(state);
+        mGridView.setAdapter(adapter);
+		mGridView.onRestoreInstanceState(state);
 	}
 	public String getPackageNameFromAppNameSortedIndex(Integer appNameSortedIndex)
 	{
