@@ -15,8 +15,12 @@ import java.lang.reflect.*;
 
 public class MainActivity extends Activity 
 {
-	public static HashMap<String, String> appMap = new HashMap<String, String>();
-	public static String[] appNames = new String[0];
+	public static HashMap<Integer,Integer> groupNameIndexesToAppNameOriginalIndexes = new HashMap<Integer,Integer>();
+	public static HashMap<Integer,Integer> appNameSortedIndexesToGroupNameIndexes = new HashMap<Integer,Integer>();
+	public static HashMap<String, String> packageNamesToAppNames = new HashMap<String, String>();
+	public static HashMap<String, String> appNamesToPackageNames = new HashMap<String, String>();
+	public static String[] appNamesOriginal = new String[0];
+	public static String[] appNamesSorted = new String[0];
 	public static String[] disabledPackages = new String[]{
 		"com.android.chrome",
 		"com.android.contact",
@@ -37,7 +41,7 @@ public class MainActivity extends Activity
 		"org.adaway",
 		"org.neissa.homescreen",
 	};
-	public static int currentPosition = 0;
+	public static Integer currentAppNameOriginalIndex = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -56,24 +60,33 @@ public class MainActivity extends Activity
 					return true;
 				}
 			});
-		android.widget.TextView mTextViewPhoto = (android.widget.TextView) findViewById(R.id.go_photo2);
-		mTextViewPhoto.setOnLongClickListener(new android.view.View.OnLongClickListener(){
+		android.widget.TextView mTextViewPhone = (android.widget.TextView) findViewById(R.id.go_phone);
+		mTextViewPhone.setOnLongClickListener(new android.view.View.OnLongClickListener(){
 				@Override
 				public boolean onLongClick(View p1)
 				{
-					gophoto2("1");
+					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage("com.android.mms");
+					if (obj == null)
+						return false;
+					startActivity(obj);
 					return true;
 				}
 			});
-			
+		/*android.widget.TextView mTextViewPhoto = (android.widget.TextView) findViewById(R.id.go_photo2);
+		 mTextViewPhoto.setOnLongClickListener(new android.view.View.OnLongClickListener(){
+		 @Override
+		 public boolean onLongClick(View p1)
+		 {
+		 gophoto2("1");
+		 return true;
+		 }
+		 });*/
+
 		android.widget.GridView mListView = (android.widget.GridView) findViewById(R.id.list);
 		mListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener(){
-				public void onItemClick(android.widget.AdapterView<?> arg0, View v, int position, long id)
+				public void onItemClick(android.widget.AdapterView<?> arg0, View v, int appNameSortedIndex, long id)
 				{
-					String appName = appNames[position];
-					if (appName.length() == 0)
-						return;
-					String packageName = appMap.get(appName);
+					String packageName = getPackageNameFromAppNameSortedIndex(appNameSortedIndex);
 					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage(packageName);
 					if (obj == null)
 						return;
@@ -81,38 +94,32 @@ public class MainActivity extends Activity
 				}
 			});
 		mListView.setOnItemLongClickListener(new android.widget.AdapterView.OnItemLongClickListener(){
-				public boolean onItemLongClick(android.widget.AdapterView<?> parent, View view, int position, long id)
+				public boolean onItemLongClick(android.widget.AdapterView<?> parent, View view, int appNameSortedIndex, long id)
 				{
-					String appName = appNames[position];
-					if (appName.length() == 0)
+					final String packageName = getPackageNameFromAppNameSortedIndex(appNameSortedIndex);
+					if(packageName == null)
 						return false;
-					currentPosition = position;
-					final String packageName = appMap.get(appName);
 
 					View promptView = LayoutInflater.from(view.getContext()).inflate(R.layout.prompt, null);
 
 					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(view.getContext());
 					alertDialogBuilder.setView(promptView);
 
-					((TextView)promptView.findViewById(R.id.go_appsettings)).setText("> "+packageName);
+					((TextView)promptView.findViewById(R.id.go_appsettings)).setText("> " + packageName);
 					final EditText userInput = (EditText) promptView.findViewById(R.id.promptValue);
-					userInput.setText(appName);
+					userInput.setText(packageNamesToAppNames.get(packageName));
 					alertDialogBuilder.setCancelable(false);
 					alertDialogBuilder.setPositiveButton("Appliquer", new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id)
 							{
 								String appName = userInput.getText().toString();
-								appMap.remove(appNames[currentPosition]);
-								appMap.put(appName, packageName);
-								appNames[currentPosition] = appName;
-								
 								dialog.cancel();
-								
+
 								SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 								SharedPreferences.Editor editor = sharedPref.edit();
 								editor.putString(packageName, appName);
 								editor.commit();
-								
+
 								buildList();
 							}
 						});
@@ -155,7 +162,7 @@ public class MainActivity extends Activity
 	}
 	public void goapp()
 	{
-		String packageName = appMap.get(appNames[currentPosition]);
+		String packageName = appNamesToPackageNames.get(appNamesOriginal[currentAppNameOriginalIndex]);
 		Intent intent = new Intent();
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -170,11 +177,11 @@ public class MainActivity extends Activity
 	public void gophoto2(String cameraId)
 	{
 		String packageName = "org.neissa.camera";
-		Intent intent = new Intent(packageName+".START");
+		Intent intent = new Intent(packageName + ".START");
 		intent.addCategory(Intent.CATEGORY_LAUNCHER);
 		intent.setComponent(ComponentName.unflattenFromString("org.neissa.camera/org.neissa.camera.MainActivity"));
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.putExtra("CAMERA_ID",cameraId);
+		intent.putExtra("CAMERA_ID", cameraId);
 		startActivity(intent);
 	}
 	public void buildList()
@@ -188,7 +195,9 @@ public class MainActivity extends Activity
 			if (!java.util.Arrays.asList(disabledPackages).contains(apps.get(i).packageName))
 				if (getPackageManager().getLaunchIntentForPackage(apps.get(i).packageName) != null)
 					nb++;
-		String[] appNamesTmp = new String[nb];
+		packageNamesToAppNames.clear();
+		appNamesToPackageNames.clear();
+		appNamesOriginal = new String[nb];
 		int n = 0;
 		for (int i=0 ; i < apps.size(); i++)
 		{
@@ -201,45 +210,77 @@ public class MainActivity extends Activity
 					String appName = sharedPref.getString(packageName, "");
 					if (appName.length() == 0)
 						appName = (packageName + (app.className != null ?'~' + app.className.replace(packageName, ""): "")).replaceFirst("\\A[a-z]*\\.", "").replace("google.", "").replaceFirst("\\Aandroid\\.", "google.").replace(".apps.", ".").replace(".app.", ".").replace(".engine.", ".").replace(".framework.", ".").replace(".common.", ".").replace(".application.", ".").replaceFirst("Class$", "").replaceFirst("Impl$", "").replaceFirst("App$", "").replaceFirst("Application$", "").replaceFirst("~\\.", "~").replaceFirst("~$", "");
-					appMap.put(appName, packageName);
-					appNamesTmp[n] = appName;
+					packageNamesToAppNames.put(packageName, appName);
+					appNamesToPackageNames.put(appName, packageName);
+					appNamesOriginal[n] = appName;
 					n++;
 				}
 		}
-		java.util.Arrays.sort(appNamesTmp);
-		
-		appNames = new String[nb];
+		java.util.Arrays.sort(appNamesOriginal);
+
+		List<String> groupNames = new ArrayList<String>();
+		String last = "";
+		for (int i=0; i < nb; i++)
+		{
+			String cur = appNamesOriginal[i].substring(0, 2);
+			if (!cur.equals(last))
+			{
+				if (groupNames.size() > 0)
+					groupNames.add("");
+				groupNames.add(cur);
+				last = cur;
+			}
+			groupNameIndexesToAppNameOriginalIndexes.put(groupNames.size(), i);
+			groupNames.add(appNamesOriginal[i].substring(2));
+		}
+		nb = groupNames.size();
+
+		appNamesSorted = new String[nb];
 		int nbc = 3;
-		int z = (int)Math.ceil((double)nb/(double)nbc);
+		int z = (int)Math.ceil((double)nb / (double)nbc);
 		int[] maxc = new int[nbc];
-		for(int i=0; i<nbc; i++)
+		for (int i=0; i < nbc; i++)
 			maxc[i] = z;
-		if(nb%nbc != 0)
-			for(int i=nb%nbc; i<nbc; i++)
+		if (nb % nbc != 0)
+			for (int i=nb % nbc; i < nbc; i++)
 				maxc[i]--;
 		int[] maxi = new int[nbc];
-		for(int i=0; i<nbc; i++)
+		for (int i=0; i < nbc; i++)
 			maxi[i] = maxc[i];
-		for(int i=0; i<nbc-1; i++)
-			maxi[i+1] += maxi[i];
-		for(int i=0; i<nb; i++)
-			appNames[i] = appNamesTmp[0];
+		for (int i=0; i < nbc - 1; i++)
+			maxi[i + 1] += maxi[i];
+		for (int i=0; i < nb; i++)
+			appNamesSorted[i] = "---";
 		int k=0;
 		int j=0;
-		for(int i=0; i<nb; i++)
+		for (int i=0; i < nb; i++)
 		{
-			if(i>=maxi[k])
+			if (i >= maxi[k])
 			{
 				k++;
-				j=k;
+				j = k;
 			}
-			j = Math.max(0,Math.min(nb-1,j));
-			appNames[j] = appNamesTmp[i];
+			j = Math.max(0, Math.min(nb - 1, j));
+			appNamesSorted[j] = groupNames.get(i);
+			appNameSortedIndexesToGroupNameIndexes.put(j, i);
 			j += 3;
 		}
-		
-        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(MainActivity.this, R.layout.app, appNames);
+
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(MainActivity.this, R.layout.app, appNamesSorted);
         mListView.setAdapter(adapter);
 		mListView.onRestoreInstanceState(state);
+	}
+	public String getPackageNameFromAppNameSortedIndex(Integer appNameSortedIndex)
+	{
+		Integer groupNameIndex = appNameSortedIndexesToGroupNameIndexes.get(appNameSortedIndex);
+		if (groupNameIndex == null)
+			return null;
+		currentAppNameOriginalIndex = groupNameIndexesToAppNameOriginalIndexes.get(groupNameIndex);
+		if (currentAppNameOriginalIndex == null)
+			return null;
+		String appName = appNamesOriginal[currentAppNameOriginalIndex];
+		if (appName.length() == 0)
+			return null;
+		return appNamesToPackageNames.get(appName);
 	}
 }
