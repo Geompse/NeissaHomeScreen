@@ -40,6 +40,8 @@ public class MainActivity extends Activity
 		"com.google.android.gms",
 		"com.google.android.googlequicksearchbox",
 		"org.adaway",
+		"org.mozilla.focus",
+		"org.neissa.input",
 		"org.neissa.homescreen",
 	};
 	public static Integer currentAppNameOriginalIndex = null;
@@ -67,6 +69,18 @@ public class MainActivity extends Activity
 				public boolean onLongClick(View p1)
 				{
 					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage("com.android.mms");
+					if (obj == null)
+						return false;
+					startActivity(obj);
+					return true;
+				}
+			});
+		android.widget.TextView mTextViewChrome = (android.widget.TextView) findViewById(R.id.go_google_chrome);
+		mTextViewChrome.setOnLongClickListener(new android.view.View.OnLongClickListener(){
+				@Override
+				public boolean onLongClick(View p1)
+				{
+					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage("org.mozilla.focus");
 					if (obj == null)
 						return false;
 					startActivity(obj);
