@@ -80,7 +80,7 @@ public class MainActivity extends Activity
 				@Override
 				public boolean onLongClick(View p1)
 				{
-					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage("org.mozilla.focus");
+					android.content.Intent obj = getPackageManager().getLaunchIntentForPackage("com.android.chrome");
 					if (obj == null)
 						return false;
 					startActivity(obj);
@@ -164,7 +164,7 @@ public class MainActivity extends Activity
 				intent = "com.android.dialer";
 				break;
 			case R.id.go_google_chrome:
-				intent = "com.android.chrome";
+				intent = "org.mozilla.focus";
 				break;
 			case R.id.go_photo:
 				intent = "com.cyngn.cameranext";
