@@ -241,7 +241,7 @@ public class MainActivity extends Activity
 		String last = "";
 		for (int i=0; i < nb; i++)
 		{
-			String cur = appNamesOriginal[i].substring(0, 2);
+			String cur = appNamesOriginal[i].length() >= 2 ? appNamesOriginal[i].substring(0, 2) : "";
 			if (!cur.equals(last))
 			{
 				if (groupNames.size() > 0)
@@ -250,7 +250,7 @@ public class MainActivity extends Activity
 				last = cur;
 			}
 			groupNameIndexesToAppNameOriginalIndexes.put(groupNames.size(), i);
-			groupNames.add(appNamesOriginal[i].substring(2));
+			groupNames.add(appNamesOriginal[i].length() >= 2 ? appNamesOriginal[i].substring(2) : "-");
 		}
 		while(groupNames.size()%nbc != 0)
 			groupNames.add("");
